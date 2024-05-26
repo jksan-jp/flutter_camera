@@ -74,13 +74,16 @@ class _CameraAppState extends State<CameraApp> {
               final img.Image capturedImage =
                   img.decodeImage(imageFile.readAsBytesSync())!;
               for (final face in faces) {
-                img.drawRect(
+                final rect = face.boundingBox;
+                final faceRegion = img.copyCrop(
                     capturedImage,
-                    face.boundingBox.left.toInt(),
-                    face.boundingBox.top.toInt(),
-                    face.boundingBox.right.toInt(),
-                    face.boundingBox.bottom.toInt(),
-                    img.getColor(0, 0, 0, 0.5 as int));
+                    rect.left.toInt(),
+                    rect.top.toInt(),
+                    rect.width.toInt(),
+                    rect.height.toInt());
+                final blurredFace = img.gaussianBlur(faceRegion, 10);
+                img.copyInto(capturedImage, blurredFace,
+                    dstX: rect.left.toInt(), dstY: rect.top.toInt());
               }
               final Directory directory =
                   await getApplicationDocumentsDirectory();
