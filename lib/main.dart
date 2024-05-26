@@ -70,21 +70,30 @@ class _CameraAppState extends State<CameraApp> {
             final faceDetector = GoogleMlKit.vision.faceDetector();
             final faces = await faceDetector.processImage(inputImage);
 
+            final img.Image capturedImage =
+                img.decodeImage(imageFile.readAsBytesSync())!;
+
             if (faces.isNotEmpty) {
-              final img.Image capturedImage =
-                  img.decodeImage(imageFile.readAsBytesSync())!;
               for (final face in faces) {
                 final rect = face.boundingBox;
+
+                // 顔領域をコピーし、ブラーをかける
                 final faceRegion = img.copyCrop(
-                    capturedImage,
-                    rect.left.toInt(),
-                    rect.top.toInt(),
-                    rect.width.toInt(),
-                    rect.height.toInt());
+                  capturedImage,
+                  rect.left.toInt(),
+                  rect.top.toInt(),
+                  rect.width.toInt(),
+                  rect.height.toInt(),
+                );
                 final blurredFace = img.gaussianBlur(faceRegion, 10);
-                img.copyInto(capturedImage, blurredFace,
-                    dstX: rect.left.toInt(), dstY: rect.top.toInt());
+                img.copyInto(
+                  capturedImage,
+                  blurredFace,
+                  dstX: rect.left.toInt(),
+                  dstY: rect.top.toInt(),
+                );
               }
+
               final Directory directory =
                   await getApplicationDocumentsDirectory();
               final blurredImagePath =
