@@ -69,6 +69,7 @@ class _CameraAppState extends State<CameraApp> {
 
             final faceDetector = GoogleMlKit.vision.faceDetector();
             final faces = await faceDetector.processImage(inputImage);
+            print('検出された顔の数: ${faces.length}\n\n');
 
             String imagePathToDisplay;
             if (faces.isNotEmpty) {
