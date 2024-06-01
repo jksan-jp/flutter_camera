@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image/image.dart' as img;
+import 'package:logger/web.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
@@ -19,7 +20,7 @@ Future<void> main() async {
 class CameraApp extends StatefulWidget {
   final CameraDescription camera;
 
-  const CameraApp({required this.camera});
+  const CameraApp({super.key, required this.camera});
 
   @override
   _CameraAppState createState() => _CameraAppState();
@@ -28,6 +29,8 @@ class CameraApp extends StatefulWidget {
 class _CameraAppState extends State<CameraApp> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
+
+  final logger = Logger();
 
   @override
   void initState() {
@@ -87,7 +90,8 @@ class _CameraAppState extends State<CameraApp> {
           final rect = face.boundingBox;
           final faceRegion = img.copyCrop(capturedImage, rect.left.toInt(),
               rect.top.toInt(), rect.width.toInt(), rect.height.toInt());
-          final blurredFace = img.gaussianBlur(faceRegion, 10);
+          final blurredFace = img.gaussianBlur(
+              faceRegion, 25); // ここで強さ。10だとちょっと弱い、100だとちょっと主張感。
           img.copyInto(capturedImage, blurredFace,
               dstX: rect.left.toInt(), dstY: rect.top.toInt());
         }
@@ -121,14 +125,14 @@ class _CameraAppState extends State<CameraApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Title')),
+      appBar: AppBar(title: const Text('Title')),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             return CameraPreview(_controller);
           } else {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
         },
       ),
@@ -136,7 +140,7 @@ class _CameraAppState extends State<CameraApp> {
         onPressed: () async {
           _aaa();
         },
-        child: Icon(Icons.camera),
+        child: const Icon(Icons.camera),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -146,12 +150,12 @@ class _CameraAppState extends State<CameraApp> {
 class PreviewScreen extends StatelessWidget {
   final String imagePath;
 
-  const PreviewScreen({required this.imagePath});
+  const PreviewScreen({super.key, required this.imagePath});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('プレビュー')),
+      appBar: AppBar(title: const Text('プレビュー')),
       body: Column(
         children: [
           Expanded(child: Image.file(File(imagePath))),
@@ -159,14 +163,14 @@ class PreviewScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 onPressed: () {
                   Navigator.pop(context);
                   File(imagePath).delete();
                 },
               ),
               IconButton(
-                icon: Icon(Icons.save),
+                icon: const Icon(Icons.save),
                 onPressed: () {
                   // 保存機能の実装
                 },
