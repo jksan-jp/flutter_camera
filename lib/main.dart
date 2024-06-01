@@ -30,6 +30,8 @@ class _CameraAppState extends State<CameraApp> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
 
+  final String loadImageName = 'IMG_3201.PNG';
+
   final logger = Logger();
 
   @override
@@ -46,7 +48,7 @@ class _CameraAppState extends State<CameraApp> {
   }
 
   Future<void> _loadImage() async {
-    final File f = await getImageFileFromAssets('IMG_3201.PNG');
+    final File f = await getImageFileFromAssets(loadImageName);
     print(f.path);
     final inputImage = InputImage.fromFilePath(f.path);
     final faceDetector = GoogleMlKit.vision.faceDetector();
@@ -73,7 +75,7 @@ class _CameraAppState extends State<CameraApp> {
       //final imageFile = File(image.path);
       //print(image.path);
 
-      final File f = await getImageFileFromAssets('IMG_3201.PNG');
+      final File f = await getImageFileFromAssets(loadImageName);
       print(f.path);
       final inputImage = InputImage.fromFilePath(f.path);
       final faceDetector = GoogleMlKit.vision.faceDetector();
@@ -155,7 +157,7 @@ class PreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('プレビュー')),
+      appBar: AppBar(title: const Text('Preview')),
       body: Column(
         children: [
           Expanded(child: Image.file(File(imagePath))),
