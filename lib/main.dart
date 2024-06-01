@@ -90,8 +90,8 @@ class _CameraAppState extends State<CameraApp> {
           final rect = face.boundingBox;
           final faceRegion = img.copyCrop(capturedImage, rect.left.toInt(),
               rect.top.toInt(), rect.width.toInt(), rect.height.toInt());
-          final blurredFace = img.gaussianBlur(
-              faceRegion, 25); // ここで強さ。10だとちょっと弱い、100だとちょっと主張感。
+          final blurredFace = img.gaussianBlur(faceRegion,
+              30); // ここで強さ。10だとちょっと弱い、100だとちょっと主張感。50もちょっと。25はわかりそう。
           img.copyInto(capturedImage, blurredFace,
               dstX: rect.left.toInt(), dstY: rect.top.toInt());
         }
