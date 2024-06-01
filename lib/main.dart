@@ -39,12 +39,12 @@ class _CameraAppState extends State<CameraApp> {
     _initializeControllerFuture = _controller.initialize();
 
     _loadImage();
+    _aaa();
   }
 
   Future<void> _loadImage() async {
     final File f = await getImageFileFromAssets('IMG_3201.PNG');
     print(f.path);
-
     final inputImage = InputImage.fromFilePath(f.path);
     final faceDetector = GoogleMlKit.vision.faceDetector();
     final faces = await faceDetector.processImage(inputImage);
@@ -62,6 +62,56 @@ class _CameraAppState extends State<CameraApp> {
     return file;
   }
 
+  Future<void> _aaa() async {
+    try {
+      await _initializeControllerFuture;
+      //final image = await _controller.takePicture();
+
+      //final imageFile = File(image.path);
+      //print(image.path);
+
+      final File f = await getImageFileFromAssets('IMG_3201.PNG');
+      print(f.path);
+      final inputImage = InputImage.fromFilePath(f.path);
+      final faceDetector = GoogleMlKit.vision.faceDetector();
+      final faces = await faceDetector.processImage(inputImage);
+      print('検出された顔の数: ${faces.length}\n\n');
+
+      String imagePathToDisplay;
+      print(faces.isNotEmpty);
+      if (faces.isNotEmpty) {
+        final imageFile = File(f.path);
+        final img.Image capturedImage =
+            img.decodeImage(imageFile.readAsBytesSync())!;
+        for (final face in faces) {
+          final rect = face.boundingBox;
+          final faceRegion = img.copyCrop(capturedImage, rect.left.toInt(),
+              rect.top.toInt(), rect.width.toInt(), rect.height.toInt());
+          final blurredFace = img.gaussianBlur(faceRegion, 10);
+          img.copyInto(capturedImage, blurredFace,
+              dstX: rect.left.toInt(), dstY: rect.top.toInt());
+        }
+        final Directory directory = await getApplicationDocumentsDirectory();
+        final blurredImagePath =
+            '${directory.path}/blurred_${DateTime.now().millisecondsSinceEpoch}.png';
+        File(blurredImagePath).writeAsBytesSync(img.encodePng(capturedImage));
+        imagePathToDisplay = blurredImagePath;
+      } else {
+        // imagePathToDisplay = image.path;
+        imagePathToDisplay = f.path;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PreviewScreen(imagePath: imagePathToDisplay),
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -71,7 +121,7 @@ class _CameraAppState extends State<CameraApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('カメラアプリ')),
+      appBar: AppBar(title: Text('Title')),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -84,55 +134,7 @@ class _CameraAppState extends State<CameraApp> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          try {
-            await _initializeControllerFuture;
-            final image = await _controller.takePicture();
-
-            final imageFile = File(image.path);
-            print(image.path);
-            final inputImage = InputImage.fromFile(imageFile);
-
-            final faceDetector = GoogleMlKit.vision.faceDetector();
-            final faces = await faceDetector.processImage(inputImage);
-            print('検出された顔の数: ${faces.length}\n\n');
-
-            String imagePathToDisplay;
-            if (faces.isNotEmpty) {
-              final img.Image capturedImage =
-                  img.decodeImage(imageFile.readAsBytesSync())!;
-              for (final face in faces) {
-                final rect = face.boundingBox;
-                final faceRegion = img.copyCrop(
-                    capturedImage,
-                    rect.left.toInt(),
-                    rect.top.toInt(),
-                    rect.width.toInt(),
-                    rect.height.toInt());
-                final blurredFace = img.gaussianBlur(faceRegion, 10);
-                img.copyInto(capturedImage, blurredFace,
-                    dstX: rect.left.toInt(), dstY: rect.top.toInt());
-              }
-              final Directory directory =
-                  await getApplicationDocumentsDirectory();
-              final blurredImagePath =
-                  '${directory.path}/blurred_${DateTime.now().millisecondsSinceEpoch}.png';
-              File(blurredImagePath)
-                ..writeAsBytesSync(img.encodePng(capturedImage));
-              imagePathToDisplay = blurredImagePath;
-            } else {
-              imagePathToDisplay = image.path;
-            }
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    PreviewScreen(imagePath: imagePathToDisplay),
-              ),
-            );
-          } catch (e) {
-            print(e);
-          }
+          _aaa();
         },
         child: Icon(Icons.camera),
       ),
